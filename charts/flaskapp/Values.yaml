@@ -1,0 +1,21 @@
+replicaCount: 1
+image:
+  repository: nginx
+  tag: stable
+  pullPolicy: IfNotPresent
+service:
+  name: nginx
+  externalPort: 80
+  internalPort: 5000
+ingress:
+  enabled: false
+  hosts:
+    - chart-example.local
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  tls:
+    - secretName: chart-example-tls
+      hosts:
+       - chart-example.local
+resources: {}
