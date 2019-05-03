@@ -1,21 +1,19 @@
 replicaCount: 1
 image:
-  repository: nginx
-  tag: stable
   pullPolicy: IfNotPresent
+  repository: mattbennett/pythonflasksampleapp
+  tag: master
 service:
-  name: nginx
+  name: flaskapp
+  type: LoadBalancer
   externalPort: 80
   internalPort: 5000
+resources:
+  limits:
+    cpu: 100m
+    memory: 128Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
 ingress:
   enabled: false
-  hosts:
-    - chart-example.local
-  annotations:
-    kubernetes.io/ingress.class: nginx
-    # kubernetes.io/tls-acme: "true"
-  tls:
-    - secretName: chart-example-tls
-      hosts:
-       - chart-example.local
-resources: {}
