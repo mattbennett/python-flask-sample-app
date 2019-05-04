@@ -5,7 +5,7 @@ image:
   tag: master
 service:
   name: flaskapp
-  type: LoadBalancer
+  type: NodePort
   externalPort: 80
   internalPort: 5000
 resources:
