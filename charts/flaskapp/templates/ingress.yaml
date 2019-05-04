@@ -8,5 +8,5 @@ metadata:
 spec:
   backend:
     serviceName: {{ template "flaskapp.fullname" . }}
-    servicePort: {{ .Values.service.externalPort }}
+    servicePort: {{ .Values.service.internalPort }}
 {{- end -}}
