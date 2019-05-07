@@ -18,6 +18,7 @@ from minitwit import minitwit
 @pytest.fixture
 def client():
     db_fd, minitwit.app.config['DATABASE'] = tempfile.mkstemp()
+    minitwit.app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{minitwit.app.config['DATABASE']}"
     client = minitwit.app.test_client()
     with minitwit.app.app_context():
         minitwit.init_db()

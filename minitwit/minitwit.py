@@ -16,10 +16,11 @@ from datetime import datetime
 from flask import Flask, request, session, url_for, redirect, \
      render_template, abort, g, flash, _app_ctx_stack
 from werkzeug import check_password_hash, generate_password_hash
-
+from flask_sqlalchemy import SQLAlchemy
 
 # configuration
 DATABASE = '/tmp/minitwit.db'
+SQLALCHEMY_DATABASE_URI = f"sqlite:///{DATABASE}"
 PER_PAGE = 30
 DEBUG = True
 SECRET_KEY = b'_5#y2L"F4Q8z\n\xec]/'
@@ -29,6 +30,29 @@ app = Flask('minitwit')
 app.config.from_object(__name__)
 app.config.from_envvar('MINITWIT_SETTINGS', silent=True)
 
+db = SQLAlchemy(app)
+
+
+class User(db.Model):
+    user_id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String)
+    email = db.Column(db.String)
+    pw_hash = db.Column(db.String)
+
+
+class Follower(db.Model):
+    who_id = db.Column(db.Integer, primary_key=True)
+    whom_id = db.Column(db.Integer, primary_key=True)
+
+
+class Message(db.Model):
+    message_id = db.Column(db.Integer, primary_key=True)
+    author_id = db.Column(db.Integer)
+    text = db.Column(db.String)
+    pub_date = db.Column(db.Integer)
+
+
+# ---
 
 def get_db():
     """Opens a new database connection if there is none yet for the
@@ -51,10 +75,7 @@ def close_database(exception):
 
 def init_db():
     """Initializes the database."""
-    db = get_db()
-    with app.open_resource('schema.sql', mode='r') as f:
-        db.cursor().executescript(f.read())
-    db.commit()
+    db.create_all()
 
 
 @app.cli.command('initdb')
@@ -73,9 +94,9 @@ def query_db(query, args=(), one=False):
 
 def get_user_id(username):
     """Convenience method to look up the id for a username."""
-    rv = query_db('select user_id from user where username = ?',
-                  [username], one=True)
-    return rv[0] if rv else None
+    user = User.query.filter_by(username=username).first()
+    if user:
+        return user.user_id
 
 
 def format_datetime(timestamp):
@@ -93,8 +114,7 @@ def gravatar_url(email, size=80):
 def before_request():
     g.user = None
     if 'user_id' in session:
-        g.user = query_db('select * from user where user_id = ?',
-                          [session['user_id']], one=True)
+        g.user = User.query.filter_by(user_id=session['user_id']).first()
 
 
 @app.route('/')
