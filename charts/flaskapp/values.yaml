@@ -6,7 +6,7 @@ image:
 service:
   name: flaskapp
   type: NodePort
-  externalPort: 80
+  externalPort: 8000
   internalPort: 5000
 resources:
   limits:
