@@ -40,4 +40,4 @@ steps:
     environment:
       - CHART_REF=charts/flaskapp
       - RELEASE_NAME=flaskapp
-      - KUBE_CONTEXT="non-prod@Pace Cloud"
+      - KUBE_CONTEXT=non-prod@Pace Cloud
