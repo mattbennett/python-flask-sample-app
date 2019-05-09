@@ -1,26 +1,43 @@
 version: '1.0'
 stages:
-  - prepare
-  - build
+  - checkout
+  - package
   - test
+  - upload
+  - deploy
 steps:
   main_clone:
     title: Cloning main repository...
     type: git-clone
     repo: '${{CF_REPO_OWNER}}/${{CF_REPO_NAME}}'
     revision: '${{CF_REVISION}}'
-    stage: prepare
+    stage: checkout
   MyAppDockerImage:
     title: Building Docker Image
     type: build
-    stage: build
+    stage: package
     image_name: my-app-image
     working_directory: ./
-    tag: '${{CF_BRANCH_TAG_NORMALIZED}}'
+    tag: v1.0.0
     dockerfile: Dockerfile
   MyUnitTests:
     title: Running Unit tests
-    stage: test
     image: '${{MyAppDockerImage}}'
+    stage: test 
     commands:
-      - python setup.py test
+      - python setup.py test    
+  MyPushStep:
+    title: Pushing to Docker Registry
+    type: push
+    stage: upload
+    tag: '${{CF_BRANCH}}'
+    candidate: '${{MyAppDockerImage}}'
+    image_name: mattbennett/pythonflasksampleapp
+    registry: dockerhub-personal
+  DeployMyChart:
+    image: 'codefresh/cfstep-helm:2.9.1'
+    stage: deploy
+    environment:
+      - CHART_REF=charts/flaskapp
+      - RELEASE_NAME=flaskapp
+      - KUBE_CONTEXT=standard-cluster-1@gke-test
